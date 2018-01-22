@@ -11,6 +11,15 @@ headers = {
 from requests import request
 
 def get_billboard(url):
+    """Get the billboard data from a URL.
+    
+    Example:
+        get_billboard("http://billboard.modulo.site/search/artist?q=kanye")
+
+    Note:
+        See http://billboard.modulo.site/ for details.
+
+    """
     r = request('GET',
             url = url,
             headers = headers
@@ -48,6 +57,13 @@ def melt_features(feats, columns):
     return melted
 
 def plot_features(feats, columns = ('danceability', 'energy'), title = 'Add a Title'):
+    """Plot features for every song in an album
+
+    Arguments:
+        feats: a list of song features returned by get_spotify_features
+        columns: a list of names of features to plot
+        title: a title for the plot
+    """
     melted = melt_features(feats, columns)
     return ggplot(melted, aes('feature', 'value', fill = 'feature')) + \
         geom_bar(stat = 'identity') + \
@@ -56,6 +72,13 @@ def plot_features(feats, columns = ('danceability', 'energy'), title = 'Add a Ti
         theme(axis_text_x = element_blank())
 
 def plot_avg_features(feats, columns = ('danceability', 'energy'), title = 'Add a Title'):
+    """Plot averaged features across songs in an album
+
+    Arguments:
+        feats: a list of song features returned by get_spotify_features
+        columns: a list of names of features to plot
+        title: a title for the plot
+    """
     melted = melt_features(feats, columns)
     avg = melted.groupby('feature', as_index = False)['value'].mean()
     return ggplot(avg, aes('feature', 'value', fill = 'feature')) + \
@@ -83,6 +106,12 @@ def check_login(f):
 # ----
 
 def login_to_spotify(auth = None):
+    """
+    Log in to spotify. You can just use login_to_spotify()
+    
+    Arguments:
+        auth: a spotify authorization token (not needed during workshop)
+    """
     if auth is None:
         try:
             r = request('GET', 'https://s3.amazonaws.com/mc-workshops/spotify_token.txt')
@@ -97,6 +126,15 @@ def login_to_spotify(auth = None):
 
 @check_login
 def search_spotify_album(album):
+    """
+    Print possible spotify matches for an album.
+    
+    Arguments:
+        album: the name of the album
+
+    Example:
+        search_spotify_album("Faster Than the Speed of Night")
+    """
     q = sp.search(album, type = 'album')
     for ii, item in enumerate(q['albums']['items']):
         print(ii + 1, '----')
@@ -106,6 +144,14 @@ def search_spotify_album(album):
 
 @check_login
 def get_spotify_features(album_id):
+    """Get features for all tracks in an album.
+
+    Arguments:
+        album_id: an album's id.
+
+    Note:
+        You can search for an album, using search_spotify_album
+    """
     # get album tracks
     album_tracks = sp.album_tracks(album_id)
     item_ids = {item['id']: item['name'] for item in album_tracks['items']}
